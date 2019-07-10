@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>weather forecast</title>
+    <style type ="text/cs">
+        body{
+        .box1{
+        display: block;
+        padding: 10px;
+        margin-bottom: 100 px;
+        text-align: center;
+        }
+        .box2{
+        display: block;
+        padding: 10px;
+        text-align: center;
+        margin-top: 100px;
+        }
+    </style>
+
+ <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+ <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type = "text/javascript">google.charts.load('current', {'packages':['corechart']});</script>
+
+
+</head>
+<body style="background-color:SkyBlue;">
+<div id="top">
+<h1 align="center">WEATHER FORECAST IN CINCINNATI FOR 5 DAYS</h1>
+</div>
+<div id="container">
+
+  <form id="contact"  name="contact" method="GET" action="/forecast/">
+  <h3>SELECT DATE</h3>
+
+  <p><input type="date" id="date" value="date"/></p>
+
+    <input type="submit" id="btn" value="submit"  class="button"/>
+    <br>
+    <div class="box1" id="forecast"></div>
+    <div class="box2" id="accuweather"></div>
+    </form>
+ </div>
+
+<script type = "text/javascript">
+var form = $("#contact");
+form.submit(function() {
+     var da = document.getElementById("date").value;
+            var year = da.substring(0, 4);
+            var month = da.substring(5, 7);
+            var day = da.substring(8, 10);
+            var fd = year + month + day;
+     var temp = form.attr("action");
+     var lookurl = temp+fd;
+$.ajax({
+  type: form.attr("method"),
+  dataType:"json",
+  url: lookurl,
+  success: function(jsonData) {
+   var data = new google.visualization.DataTable();
+      data.addColumn('string', 'DATE');
+      data.addColumn('number', 'TMAX');
+      data.addColumn('number', 'TMIN');
+      for (var i = 0; i < jsonData.length; i++) {
+          data.addRow([jsonData[i].DATE, parseFloat(jsonData[i].TMAX),parseFloat(jsonData[i].TMIN)]);
+      }
+      var options = {
+          animation:{
+          duration: 1000,
+          easing: 'linear',
+          startup: true
+         },
+          title: 'WEATHER INFORMATION',
+          is3D: true,
+          colors: ['pink','skyblue']
+      };
+      var chart = new google.visualization.LineChart(document.getElementById("forecast"));
+      chart.draw(data, options);
+  }
+});
+$.ajax({
+  type: form.attr("method"),
+  dataType:"json",
+  url:"http://dataservice.accuweather.com/forecasts/v1/daily/5day/335315?apikey=pw5BmGM9qsupRKXhaZnXeqeKbzexq20b",
+  success: function(jsonData) {
+    var aw = new google.visualization.DataTable();
+        aw.addColumn('string','DATE');
+        aw.addColumn('number','TMAX');
+        aw.addColumn('number','TMIN');
+         for (var i = 0; i < 5; i++) {
+          aw.addRow([jsonData.DailyForecasts[i].Date, parseFloat(jsonData.DailyForecasts[i].Temperature.Maximum.Value),parseFloat(jsonData.DailyForecasts[i].Temperature.Minimum.Value)]);
+      }
+         var options = {
+       animation:{
+          duration: 1000,
+          easing: 'linear',
+          startup: true
+         },
+          title: 'THIRD PARTY WEATHER INFORMATION',
+          is3D: true,
+        colors:['pink','skyblue']
+      };
+      var chart = new google.visualization.LineChart(document.getElementById("accuweather"));
+      chart.draw(aw, options);
+}
+});
+return false;
+});
+</script>
+
+
+</body>
+</html>
